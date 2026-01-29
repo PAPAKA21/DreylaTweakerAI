@@ -1,76 +1,44 @@
 @echo off
-cd /d "%~dp0"
+pushd "%~dp0" 2>nul || cd /d "%~dp0"
 chcp 65001 >nul
 
-:: --- ПРОВЕРКА АДМИН ПРАВ ---
+:: --- ADMIN CHECK ---
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [Дрейла]: Ой, мне нужно больше власти! Запусти меня от имени админа... (✿◕‿◕)
+    echo.
+    echo [Dreyla]: Need Admin rights! Requesting...
     powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
     exit /b
 )
 
-:: --- НАСТРОЙКИ ---
-set "CV=3.19.13"
-set /a "cache_killer=%random%"
-set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt?v=%cache_killer%"
+:: --- SETTINGS ---
+set "CV=3.19.14"
+set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
 
-:: --- ПРИВЕТСТВИЕ ДРЕЙЛЫ ---
-title DreylaAI OP v3.19.1 A [Testing]
-echo (✿◠‿◠) Приветик! Я Дрейла.
-echo Ой, сейчас я проверю, не пора ли мне обновиться... ✨
-
-:: --- БЛОК ОБНОВЛЕНИЯ ---
-:: Чистим версию от мусора (невидимых символов) прямо при загрузке
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$web = New-Object System.Net.WebClient; ^
-    try { ^
-        $raw = $web.DownloadString('%U_VER%'); ^
-        $latest = ($raw -replace '[^0-9.]', '').Trim(); ^
-        if ([double]$latest -gt [double]%CV%) { exit 1 } else { exit 0 } ^
-    } catch { exit 2 }"
-
+:: --- UPDATE CHECK ---
+echo [Dreyla]: Checking for updates...
+powershell -NoProfile -Command "$w=New-Object Net.WebClient;$v=$w.DownloadString('%U_VER%').Trim();if([version]$v -gt [version]'%CV%'){exit 1}else{exit 0}"
 if %errorlevel% equ 1 (
-    echo [Дрейла]: Ня! Нашлась версия поновее! Скачиваю... 🎀
-    
-    :: Пробуем скачать файл с проверкой
-    powershell -NoProfile -Command "try { (New-Object System.Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_new.tmp') } catch { exit 1 }"
-    
-    if exist "Dreyla_new.tmp" (
-        echo [Дрейла]: Ура! Обновление скачалось. Переодеваюсь! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
-        (
-            echo @echo off
-            echo timeout /t 2 /nobreak ^>nul
-            echo move /y "Dreyla_new.tmp" "%~nx0"
-            echo start "" "%~nx0"
-            echo del "%%~f0"
-        ) > "update_dreyla.bat"
-        
-        start "" "update_dreyla.bat"
-        exit /b
-    ) else (
-        echo [Дрейла]: Ой... Файл обновления не скачался. (｡•́︿•̀｡)
-        echo Возможно, ссылка на файл неправильная или нет доступа.
-        del "Dreyla_new.tmp" >nul 2>&1
-    )
+    echo [Dreyla]: New version found! Downloading update...
+    powershell -NoProfile -Command "(New-Object Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_NEW.bat')"
+    echo.
+    echo [Dreyla]: Update saved as 'Dreyla_NEW.bat'.
+    echo Please run the NEW file manually.
+    echo Continuing with current version...
+    timeout /t 3 >nul
 )
 
-if %errorlevel% equ 2 (
-    echo [Дрейла]: Ой... Не смогла дотянуться до интернета. Поработаю пока так! (っ•﹏•)っ
-) else (
-    echo [Дрейла]: У меня самая свежая версия! Пойду поиграю. (o^▽^o)
-)
-
-echo.
-echo --------------------------------------------------
-echo    Дрейла Твикер запущен! Текущая версия: %CV%
-echo --------------------------------------------------
-
+:: --- LAUNCH ---
 setlocal
-title DreylaAI OP v3.19.1 A [Testing]
-
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((Get-Content -Path '%~f0' -Raw) -replace '(?s)^.*?<#', '<#')"
+if %errorlevel% neq 0 (
+    echo.
+    echo [Dreyla]: PowerShell exited with error!
+    pause
+)
 exit /b
+<#
 #>
 
 # --- ENGINE START ---
@@ -2199,6 +2167,4 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
-
-
 
