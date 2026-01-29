@@ -3,7 +3,7 @@
 chcp 65001 >nul
 
 :: --- НАСТРОЙКИ ---
-set "CV=0.1"
+set "CV=0.2"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/Version.txt"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/DreylaTweakAi.bat"
 
@@ -2171,6 +2171,7 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
 
