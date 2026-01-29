@@ -1,49 +1,79 @@
-﻿<# :
 @echo off
+:: Устанавливаем рабочую папку, чтобы Дрейла не терялась
+cd /d "%~dp0"
 chcp 65001 >nul
 
+:: --- ПРОВЕРКА АДМИН ПРАВ ---
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [Дрейла]: Ой, мне нужно больше власти! Запусти меня от имени админа... (✿◕‿◕)
+    powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
+    exit /b
+)
+
 :: --- НАСТРОЙКИ ---
-set "CV=0.2"
-set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/Version.txt"
-set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/DreylaTweakAi.bat"
+set "CV=3.19.12"
+:: Добавляем случайное число к ссылке, чтобы убить кэш Гитхаба
+set /a "cache_killer=%random%"
+set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt?v=%cache_killer%"
+set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
 
 :: --- ПРИВЕТСТВИЕ ДРЕЙЛЫ ---
+title DreylaAI OP v3.19.1 A [Testing]
 echo (✿◠‿◠) Приветик! Я Дрейла.
 echo Ой, сейчас я проверю, не пора ли мне обновиться... ✨
 
 :: --- БЛОК ОБНОВЛЕНИЯ ---
-powershell -NoProfile -Command "^
+:: Чистим версию от мусора (невидимых символов) прямо при загрузке
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$web = New-Object System.Net.WebClient; ^
     try { ^
-        $web = New-Object System.Net.WebClient; ^
-        $latest = $web.DownloadString('%U_VER%').Trim(); ^
-        if ([double]$latest -gt [double]%CV%) { exit 1 } else { exit 0 }; ^
-    } catch { exit 2 } ^
-"
+        $raw = $web.DownloadString('%U_VER%'); ^
+        $latest = ($raw -replace '[^0-9.]', '').Trim(); ^
+        if ([double]$latest -gt [double]%CV%) { exit 1 } else { exit 0 } ^
+    } catch { exit 2 }"
 
 if %errorlevel% equ 1 (
-    echo [Дрейла]: Ня! Нашлась версия %latest%! Сейчас я быстро переоденусь...
-    powershell -NoProfile -Command "(New-Object System.Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_new.tmp')"
-    (
-        echo @echo off
-        echo timeout /t 2 /nobreak ^>nul
-        echo move /y Dreyla_new.tmp "%~nx0"
-        echo start "" "%~nx0"
-        echo del update.bat
-    ) > update.bat
-    start "" update.bat
-    exit /b
+    echo [Дрейла]: Ня! Нашлась версия поновее! Скачиваю... 🎀
+    
+    :: Пробуем скачать файл с проверкой
+    powershell -NoProfile -Command "try { (New-Object System.Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_new.tmp') } catch { exit 1 }"
+    
+    if exist "Dreyla_new.tmp" (
+        echo [Дрейла]: Ура! Обновление скачалось. Переодеваюсь! (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
+        (
+            echo @echo off
+            echo timeout /t 2 /nobreak ^>nul
+            echo move /y "Dreyla_new.tmp" "%~nx0"
+            echo start "" "%~nx0"
+            echo del "%%~f0"
+        ) > "update_dreyla.bat"
+        
+        start "" "update_dreyla.bat"
+        exit /b
+    ) else (
+        echo [Дрейла]: Ой... Файл обновления не скачался. (｡•́︿•̀｡)
+        echo Возможно, ссылка на файл неправильная или нет доступа.
+        del "Dreyla_new.tmp" >nul 2>&1
+    )
 )
+
+if %errorlevel% equ 2 (
+    echo [Дрейла]: Ой... Не смогла дотянуться до интернета. Поработаю пока так! (っ•﹏•)っ
+) else (
+    echo [Дрейла]: У меня самая свежая версия! Пойду поиграю. (o^▽^o)
+)
+
+echo.
+echo --------------------------------------------------
+echo    Дрейла Твикер запущен! Текущая версия: %CV%
+echo --------------------------------------------------
 
 setlocal
 title DreylaAI OP v3.19.1 A [Testing]
-:: Проверка прав администратора
-openfiles >nul 2>&1
-if %errorlevel% neq 0 (
-    echo  Дрейла требует доступ уровня администратора...
-    powershell -Command "Start-Process '%~f0' -Verb RunAs"
-    exit /b
-)
 
+exit /b
+#>
 
 # --- ENGINE START ---
 $Global:WorkDrive = "C"
@@ -855,7 +885,7 @@ function Start-Debloat {
         Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -like "*$($item.Name)*"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
     }
     
-    Write-Host "`nГотово! Система очищена." -ForegroundColor Green
+    Write-Host "`nВсё лишнее убрала! Теперь система легкая как перышко! 🕊️" -ForegroundColor Green
     Pause
 }
 
@@ -1085,7 +1115,7 @@ function Start-Tweaks {
                     if (Show-Confirmation "Вернуть классическое меню (Win 10 style)?") {
                         reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve | Out-Null
                         Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Start-Process explorer
-                        Write-Host "Готово (Explorer перезапущен)." -ForegroundColor Green 
+                        Write-Host "Сделала меню как в Windows 10! Удобно! (b ᵔ▽ᵔ)b" -ForegroundColor Green 
                     }
                 }
                 "3" {
@@ -1094,12 +1124,12 @@ function Start-Tweaks {
                         if (Test-Path $path) { 
                             Remove-Item $path -Recurse -Force
                             Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Start-Process explorer
-                            Write-Host "Включено 'Показать доп. параметры' (Explorer перезапущен)" -ForegroundColor Yellow 
+                            Write-Host "Включила современное меню (Win 11)! Красиво, да? (✿◠‿◠)" -ForegroundColor Yellow 
                         }
                         else { 
                             reg add $path /f /ve | Out-Null
                             Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Start-Process explorer
-                            Write-Host "Отключено (Классический вид) (Explorer перезапущен)" -ForegroundColor Green 
+                            Write-Host "Вернула старое меню (Win 10)! Как скажешь! (｡•̀ᴗ-)" -ForegroundColor Green 
                         }
                     }
                 }
@@ -1439,7 +1469,7 @@ function Start-Clean {
                 Show-Spinner "Очистка Temp..."
                 Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
                 Remove-Item -Path "$env:windir\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Host "Готово." -ForegroundColor Green
+                Write-Host "Убрала немножко мусора! (temp) 🧹" -ForegroundColor Green
             }
         }
         "2" {
@@ -1471,7 +1501,7 @@ function Start-Clean {
             if (Show-Confirmation "HARDCORE: DISM Cleanup + Driver Cleanup (Долго!)") {
                  Show-Spinner "DISM Cleanup"
                  dism /online /cleanup-image /startcomponentcleanup /resetbase
-                 Write-Host "Готово." -ForegroundColor Green
+                 Write-Host "Ух! Это было сложно, но я справилась! (Hardcore Clean) 😤" -ForegroundColor Green
             }
         }
     }
@@ -1950,7 +1980,7 @@ function Start-RestoreMenu {
             if (Show-Confirmation "Переустановить ВСЕ встроенные приложения (Долго)?") {
                  Show-Spinner "Восстановление всех AppX"
                  Get-AppxPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" -ErrorAction SilentlyContinue}
-                 Write-Host "Готово." -ForegroundColor Green
+                 Write-Host "Вернула все-все приложения на место! 🏠" -ForegroundColor Green
             }
         }
         "7" {
@@ -2171,7 +2201,4 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
-
-
-
 
