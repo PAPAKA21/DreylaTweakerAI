@@ -1,5 +1,4 @@
 @echo off
-:: Устанавливаем рабочую папку, чтобы Дрейла не терялась
 cd /d "%~dp0"
 chcp 65001 >nul
 
@@ -13,7 +12,6 @@ if %errorlevel% neq 0 (
 
 :: --- НАСТРОЙКИ ---
 set "CV=3.19.12"
-:: Добавляем случайное число к ссылке, чтобы убить кэш Гитхаба
 set /a "cache_killer=%random%"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt?v=%cache_killer%"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
@@ -2201,4 +2199,5 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
