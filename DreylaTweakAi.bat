@@ -12,7 +12,7 @@ if %errorlevel% neq 0 (
 )
 
 :: --- SETTINGS ---
-set "CV=3.19.15"
+set "CV=3.19.16"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
 
@@ -2167,5 +2167,6 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
