@@ -43,10 +43,7 @@ if %errorlevel% neq 0 (
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
-:: Запуск PowerShell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$content = Get-Content -Path '%~f0' -Encoding UTF8; $code = $content -join [Environment]::NewLine; Invoke-Expression $code"
-exit /b
-#>
+
 
 # --- ENGINE START ---
 $Global:WorkDrive = "C"
@@ -2174,5 +2171,6 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
