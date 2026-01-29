@@ -17,21 +17,27 @@ set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Versi
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
 
 :: --- UPDATE CHECK ---
-echo [Dreyla]: Checking for updates...
+echo [Dreyla]: Я ищу обновления, еще чуть чуть, и будет что-то новенькое...
 powershell -NoProfile -Command "$w=New-Object Net.WebClient;$v=$w.DownloadString('%U_VER%').Trim();if([version]$v -gt [version]'%CV%'){exit 1}else{exit 0}"
 if %errorlevel% equ 1 (
-    echo [Dreyla]: New version found! Downloading update...
+    echo [Dreyla]: Я нашла обновления, там что-то новенькое, поехали!
     powershell -NoProfile -Command "(New-Object Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_NEW.bat')"
-    echo.
-    echo [Dreyla]: Update saved as 'Dreyla_NEW.bat'.
-    echo Please run the NEW file manually.
-    echo Continuing with current version...
-    timeout /t 3 >nul
+    
+    (
+        echo @echo off
+        echo timeout /t 2 ^>nul
+        echo move /y "Dreyla_NEW.bat" "%~nx0"
+        echo start "" "%~nx0"
+        echo del "update.cmd"
+    ) > update.cmd
+    
+    start "" update.cmd
+    exit
 )
 
 :: --- LAUNCH ---
 setlocal
-powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((Get-Content -Path '%~f0' -Raw) -replace '(?s)^.*?<#', '<#')"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((Get-Content -Path '%~f0' -Raw -Encoding UTF8) -replace '(?s)^.*?<#', '<#')"
 if %errorlevel% neq 0 (
     echo.
     echo [Dreyla]: PowerShell exited with error!
@@ -72,13 +78,13 @@ function Play-Tetris {
     try { [Console]::CursorVisible = $false } catch {}
 
     $shapes = @(
-        @{ Coords = @(-1,0, 0,0, 1,0, 2,0); Color = "Cyan"; Char = "█" },
-        @{ Coords = @(0,0, 1,0, 0,1, 1,1); Color = "Yellow"; Char = "▓" },
-        @{ Coords = @(-1,0, 0,0, 1,0, 0,1); Color = "Magenta"; Char = "▒" },
-        @{ Coords = @(0,0, 1,0, -1,1, 0,1); Color = "Green"; Char = "░" },
-        @{ Coords = @(-1,0, 0,0, 0,1, 1,1); Color = "Red"; Char = "▄" },
-        @{ Coords = @(-1,0, 0,0, 1,0, 1,1); Color = "Blue"; Char = "▀" },
-        @{ Coords = @(-1,0, 0,0, 1,0, -1,1); Color = "White"; Char = "■" }
+        @{ Coords = @(-1,0, 0,0, 1,0, 2,0); Color = "Cyan"; Char = "#" },
+        @{ Coords = @(0,0, 1,0, 0,1, 1,1); Color = "Yellow"; Char = "#" },
+        @{ Coords = @(-1,0, 0,0, 1,0, 0,1); Color = "Magenta"; Char = "#" },
+        @{ Coords = @(0,0, 1,0, -1,1, 0,1); Color = "Green"; Char = "#" },
+        @{ Coords = @(-1,0, 0,0, 0,1, 1,1); Color = "Red"; Char = "#" },
+        @{ Coords = @(-1,0, 0,0, 1,0, 1,1); Color = "Blue"; Char = "#" },
+        @{ Coords = @(-1,0, 0,0, 1,0, -1,1); Color = "White"; Char = "#" }
     )
 
     while ($true) {
@@ -149,10 +155,10 @@ function Play-Tetris {
 
             # Очистка и рендер
             [Console]::SetCursorPosition(0, 0)
-            Write-Host "┌─────────────────────────────────────────────────────────────┐" -ForegroundColor Cyan
-            Write-Host "│                    [#] TETRIS v3.01 [#]                     │" -ForegroundColor Yellow
-            Write-Host "│ Score: $score  |  Lines: $lines  |  Level: $level  |  Esc: Exit │" -ForegroundColor White
-            Write-Host "└─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+            Write-Host "+-------------------------------------------------------------+" -ForegroundColor Cyan
+            Write-Host "|                    [#] TETRIS v3.01 [#]                     |" -ForegroundColor Yellow
+            Write-Host "| Score: $score  |  Lines: $lines  |  Level: $level  |  Esc: Exit |" -ForegroundColor White
+            Write-Host "+-------------------------------------------------------------+" -ForegroundColor Cyan
             
             $renderBuf = $board.Clone()
             for ($i = 0; $i -lt $currentShape.Length; $i += 2) {
@@ -164,7 +170,7 @@ function Play-Tetris {
             }
 
             for ($y = 0; $y -lt $height; $y++) {
-                Write-Host "│" -NoNewline -ForegroundColor Cyan
+                Write-Host "|" -NoNewline -ForegroundColor Cyan
                 for ($x = 0; $x -lt $width; $x++) {
                     $val = $renderBuf[$y * $width + $x]
                     if ($val -eq 0) { 
@@ -174,13 +180,13 @@ function Play-Tetris {
                         Write-Host "$pieceChar$pieceChar" -NoNewline -ForegroundColor $pieceColor 
                     }
                     else { 
-                        Write-Host "██" -NoNewline -ForegroundColor Gray 
+                        Write-Host "##" -NoNewline -ForegroundColor Gray 
                     }
                 }
-                Write-Host "│" -ForegroundColor Cyan
+                Write-Host "|" -ForegroundColor Cyan
             }
             
-            Write-Host "└─────────────────────────────────────────────────────────────┘" -ForegroundColor Cyan
+            Write-Host "+-------------------------------------------------------------+" -ForegroundColor Cyan
 
             $gravityTimer++
             if ($gravityTimer -ge $gravityLimit) {
@@ -305,23 +311,23 @@ function Play-Snake {
         }
 
         Clear-Host
-        Write-Host "╔══════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-        Write-Host "║                    [S] ЗМЕЙКА v0.12 [S]                      ║" -ForegroundColor Yellow
-        Write-Host "║ Score: $score  |  High Score: $highScore  |  ESC: Exit       ║" -ForegroundColor Cyan
-        Write-Host "╚══════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Green
+        Write-Host "|                    [S] ЗМЕЙКА v0.12 [S]                      |" -ForegroundColor Yellow
+        Write-Host "| Score: $score  |  High Score: $highScore  |  ESC: Exit       |" -ForegroundColor Cyan
+        Write-Host "+--------------------------------------------------------------------------+" -ForegroundColor Green
         Write-Host " Управление: W A S D | ESC - выход" -ForegroundColor DarkGray
 
         for ($y = 0; $y -lt $height; $y++) {
             $line = ""
             for ($x = 0; $x -lt $width; $x++) {
                 if ($y -eq 0 -or $y -eq ($height - 1) -or $x -eq 0 -or $x -eq ($width - 1)) {
-                    $line += "█"
+                    $line += "#"
                 }
                 elseif ($x -eq $food.X -and $y -eq $food.Y) {
                     $line += "O"
                 }
                 elseif ($snake | Where-Object { $_.X -eq $x -and $_.Y -eq $y }) {
-                    $line += "▓"
+                    $line += "*"
                 }
                 else {
                     $line += " "
@@ -610,6 +616,7 @@ function Show-About {
     Write-Type "Если вы читаете это, будьте осторожны перед тем как выбрать что отключить." -Delay 8 -Color Cyan
     Write-Type "Почему в консоле? Потому что так проще мне понять что я пишу, я не программист," -Delay 8 -Color Red
     Write-Type "помогла модель Dreyla, эту модель вы не найдете." -Delay 8 -Color Red
+    Write-Type "ОБНОВЛЕНИЕ И ПРОВЕРКА!" -Delay 8 -Color Red
     Write-Host ""
     Write-Type "Автор сборки: Папака + немного помощи от Dreyla AI." -Delay 8 -Color Yellow
     Write-Type "Если тебе зашло — не ставь говносборки, ставь оригинал и твикер." -Delay 8 -Color Yellow
@@ -628,7 +635,7 @@ function Show-Logo {
         "    ██║  ██║██╔══██╗██╔══╝    ╚██╔╝  ██║     ██╔══██║",
         "    ██████╔╝██║  ██║███████╗   ██║   ███████╗██║  ██║",
         "    ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝",
-        "             PREMIUM OPTIMIZER | v3.19.15 Test Update | BY PAPAKA & DreylaAI"
+        "             PREMIUM OPTIMIZER | v3.19.16 Test Update | BY PAPAKA & DreylaAI"
     )
     
     foreach ($line in $logo) {
