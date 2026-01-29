@@ -35,7 +35,7 @@ if %errorlevel% equ 1 (
 )
 
 setlocal
-title DreylaAI OP v3.19.1 A [Testing]
+title DreylaAI OP v3.19.12 A [Testing]
 :: Проверка прав администратора
 openfiles >nul 2>&1
 if %errorlevel% neq 0 (
@@ -2174,5 +2174,6 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
