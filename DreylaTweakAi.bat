@@ -5,7 +5,7 @@ chcp 65001 >nul
 :: --- НАСТРОЙКИ ---
 set "CV=0.1"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/Version.txt"
-set "U_FILE=" :: Комментарий, я сам добавлю ссылку
+set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/refs/heads/main/DreylaTweakAi.bat"
 
 :: --- ПРИВЕТСТВИЕ ДРЕЙЛЫ ---
 echo (✿◠‿◠) Приветик! Я Дрейла.
@@ -2174,4 +2174,5 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
