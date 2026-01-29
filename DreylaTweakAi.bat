@@ -11,7 +11,7 @@ if %errorlevel% neq 0 (
 )
 
 :: --- НАСТРОЙКИ ---
-set "CV=3.19.12"
+set "CV=3.19.13"
 set /a "cache_killer=%random%"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt?v=%cache_killer%"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
@@ -2199,5 +2199,6 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
