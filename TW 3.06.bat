@@ -635,7 +635,7 @@ function Show-Logo {
         "    ██║  ██║██╔══██╗██╔══╝    ╚██╔╝  ██║     ██╔══██║",
         "    ██████╔╝██║  ██║███████╗   ██║   ███████╗██║  ██║",
         "    ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝",
-        "             PREMIUM OPTIMIZER | v3.19.1 | BY PAPAKA & DreylaAI"
+        "             PREMIUM OPTIMIZER | v3.19.12 | BY PAPAKA & DreylaAI"
     )
     
     foreach ($line in $logo) {
@@ -2174,6 +2174,7 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
 
 
