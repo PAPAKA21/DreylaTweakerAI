@@ -12,7 +12,7 @@ if %errorlevel% neq 0 (
 )
 
 :: --- SETTINGS ---
-set "CV=3.19.14"
+set "CV=3.19.15"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
 
@@ -628,7 +628,7 @@ function Show-Logo {
         "    ██║  ██║██╔══██╗██╔══╝    ╚██╔╝  ██║     ██╔══██║",
         "    ██████╔╝██║  ██║███████╗   ██║   ███████╗██║  ██║",
         "    ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝",
-        "             PREMIUM OPTIMIZER | v3.19.1 | BY PAPAKA & DreylaAI"
+        "             PREMIUM OPTIMIZER | v3.19.15 Test Update | BY PAPAKA & DreylaAI"
     )
     
     foreach ($line in $logo) {
@@ -2167,4 +2167,5 @@ do {
         'EXIT' { exit }
     }
 } while ($true)
+
 
