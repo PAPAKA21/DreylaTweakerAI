@@ -642,7 +642,7 @@ function Show-Logo {
         "    ██║  ██║██╔══██╗██╔══╝    ╚██╔╝  ██║     ██╔══██║",
         "    ██████╔╝██║  ██║███████╗   ██║   ███████╗██║  ██║",
         "    ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝",
-        "             PREMIUM OPTIMIZER | v3.19.16 Test Update | BY PAPAKA & DreylaAI"
+        "             PREMIUM OPTIMIZER | v3.19.17 Test Update | BY PAPAKA & DreylaAI"
     )
     
     foreach ($line in $logo) {
@@ -665,6 +665,28 @@ function Show-Spinner {
     }
     Write-Host "[ УСПЕХ! ] Сделано! Ня! ✨" -ForegroundColor Green
     [Console]::Beep(1000, 150)
+}
+
+function Set-ServiceStateSafe {
+    param(
+        [Parameter(Mandatory = $true)][string]$ServiceName,
+        [Parameter(Mandatory = $true)][ValidateSet("Enable", "Disable")][string]$Mode
+    )
+
+    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if (-not $svc) {
+        return $false
+    }
+
+    if ($Mode -eq "Disable") {
+        Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+        Set-Service -Name $ServiceName -StartupType Disabled -ErrorAction SilentlyContinue
+        return $true
+    }
+
+    Set-Service -Name $ServiceName -StartupType Automatic -ErrorAction SilentlyContinue
+    Start-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    return $true
 }
 
 
@@ -696,7 +718,7 @@ function Init-Setup {
     Write-Host ""
 
     Write-Type ">>> Приветик! Я Дрейла! Давай наведем красоту! (✿◠‿◠)" -Delay 15
-    Write-Host "`Где будем строить базу? (Программы, игры...)" -ForegroundColor White
+    Write-Host "`nГде будем строить базу? (Программы, игры...)" -ForegroundColor White
     Write-Host "Если диск один, просто жми Enter (C)." -ForegroundColor Gray
     
     $inputDrive = Read-Host "`n > Буква диска"
@@ -1549,7 +1571,7 @@ function Start-ServicesMenu {
         if ($sel -eq "P1") {
             if (Show-Confirmation "Отключить безопасные службы (Fax, Phone, Maps, Retail)?") {
                 $list = @("Fax", "PhoneSvc", "MapsBroker", "RetailDemo", "WalletService", "WwanSvc", "XblAuthManager", "XblGameSave")
-                foreach ($l in $list) { Stop-Service $l -Force -ErrorAction SilentlyContinue; Set-Service $l -StartupType Disabled }
+                foreach ($l in $list) { [void](Set-ServiceStateSafe -ServiceName $l -Mode Disable) }
                 Write-Host "Безопасный пресет применен." -ForegroundColor Green
                 Pause
             }
@@ -1559,7 +1581,7 @@ function Start-ServicesMenu {
         if ($sel -eq "P2") {
             if (Show-Confirmation "Отключить агрессивные службы (SysMain, Spooler, Update)?") {
                 $list = @("SysMain", "Spooler", "TabletInputService", "wuauserv", "UsoSvc", "bits", "dosvc", "DiagTrack", "WerSvc", "MpsSvc")
-                foreach ($l in $list) { Stop-Service $l -Force -ErrorAction SilentlyContinue; Set-Service $l -StartupType Disabled }
+                foreach ($l in $list) { [void](Set-ServiceStateSafe -ServiceName $l -Mode Disable) }
                 Write-Host "Агрессивный пресет применен." -ForegroundColor Green
                 Pause
             }
@@ -1577,7 +1599,9 @@ function Start-ServicesMenu {
                 $content += "End If`r`n"
                 
                 foreach ($s in $services) {
-                    $startType = (Get-Service $s.ID).StartType
+                    $svcObj = Get-Service -Name $s.ID -ErrorAction SilentlyContinue
+                    if (-not $svcObj) { continue }
+                    $startType = $svcObj.StartType
                     $startStr = "auto"
                     if ($startType -eq "Manual") { $startStr = "demand" }
                     if ($startType -eq "Disabled") { $startStr = "disabled" }
@@ -1598,7 +1622,9 @@ function Start-ServicesMenu {
                 $content += ":: Check Admin`r`nopenfiles >nul 2>&1`r`nif %errorlevel% neq 0 ( powershell start -verb runas '%0' & exit /b )`r`n"
                 
                 foreach ($s in $services) {
-                    $startType = (Get-Service $s.ID).StartType
+                    $svcObj = Get-Service -Name $s.ID -ErrorAction SilentlyContinue
+                    if (-not $svcObj) { continue }
+                    $startType = $svcObj.StartType
                     $startStr = "auto"
                     if ($startType -eq "Manual") { $startStr = "demand" }
                     if ($startType -eq "Disabled") { $startStr = "disabled" }
@@ -1614,18 +1640,21 @@ function Start-ServicesMenu {
         
         $svc = $services | Where-Object { $_.ID -eq $sel }
         if ($svc) {
-            $curr = Get-Service $svc.ID
+            $curr = Get-Service -Name $svc.ID -ErrorAction SilentlyContinue
+            if (-not $curr) {
+                Write-Host "Служба '$($svc.Disp)' не найдена в этой версии Windows." -ForegroundColor Yellow
+                Start-Sleep -Seconds 1
+                continue
+            }
             if ($curr.Status -eq "Running") {
                 if (Show-Confirmation "Отключить службу '$($svc.Disp)'?") {
-                    Stop-Service $svc.ID -Force -ErrorAction SilentlyContinue
-                    Set-Service $svc.ID -StartupType Disabled
+                    [void](Set-ServiceStateSafe -ServiceName $svc.ID -Mode Disable)
                     Write-Host "Служба отключена." -ForegroundColor Red
                     Start-Sleep -Seconds 1
                 }
             } else {
                 if (Show-Confirmation "Включить службу '$($svc.Disp)'?") {
-                    Set-Service $svc.ID -StartupType Automatic
-                    Start-Service $svc.ID -ErrorAction SilentlyContinue
+                    [void](Set-ServiceStateSafe -ServiceName $svc.ID -Mode Enable)
                     Write-Host "Служба включена." -ForegroundColor Green
                     Start-Sleep -Seconds 1
                 }
