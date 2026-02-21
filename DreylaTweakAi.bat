@@ -12,27 +12,34 @@ if %errorlevel% neq 0 (
 )
 
 :: --- SETTINGS ---
-set "CV=3.19.16"
+set "CV=3.19.17"
 set "U_VER=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/Version.txt"
 set "U_FILE=https://raw.githubusercontent.com/PAPAKA21/DreylaTweakerAI/main/DreylaTweakAi.bat"
+set "UPD_FILE=%TEMP%\Dreyla_NEW.bat"
+set "UPD_CMD=%TEMP%\Dreyla_update.cmd"
 
 :: --- UPDATE CHECK ---
 echo [Dreyla]: Я ищу обновления, еще чуть чуть, и будет что-то новенькое...
-powershell -NoProfile -Command "$w=New-Object Net.WebClient;$v=$w.DownloadString('%U_VER%').Trim();if([version]$v -gt [version]'%CV%'){exit 1}else{exit 0}"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop';try{$cv=[version]'%CV%';$v=(Invoke-WebRequest -UseBasicParsing '%U_VER%').Content.Trim();$rv=[version]$v;if($rv -le $cv){exit 0};Invoke-WebRequest -UseBasicParsing '%U_FILE%' -OutFile '%UPD_FILE%';if(!(Test-Path '%UPD_FILE%') -or (Get-Item '%UPD_FILE%').Length -lt 1000){throw 'Broken update package'};exit 1}catch{exit 2}"
+
 if %errorlevel% equ 1 (
     echo [Dreyla]: Я нашла обновления, там что-то новенькое, поехали!
-    powershell -NoProfile -Command "(New-Object Net.WebClient).DownloadFile('%U_FILE%', 'Dreyla_NEW.bat')"
-    
+
     (
         echo @echo off
         echo timeout /t 2 ^>nul
-        echo move /y "Dreyla_NEW.bat" "%~nx0"
-        echo start "" "%~nx0"
-        echo del "update.cmd"
-    ) > update.cmd
-    
-    start "" update.cmd
+        echo copy /y "%UPD_FILE%" "%~f0" ^>nul
+        echo if errorlevel 1 exit /b 1
+        echo start "" "%~f0"
+        echo del "%UPD_FILE%" ^>nul 2^>^&1
+        echo del "%%~f0" ^>nul 2^>^&1
+    ) > "%UPD_CMD%"
+
+    start "" "%UPD_CMD%"
     exit
+)
+if %errorlevel% equ 2 (
+    echo [Dreyla]: Не удалось проверить обновления, продолжаю запуск текущей версии.
 )
 
 :: --- LAUNCH ---
